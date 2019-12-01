@@ -40,7 +40,7 @@ login_to_registry() {
 }
 
 pull_cached_stages() {
-  docker pull --all-tags "$(_get_full_image_name)"-stages 2> /dev/null | tee "$PULL_STAGES_LOG" || true
+  docker pull --all-tags "$(_get_full_image_name)" 2> /dev/null | tee "$PULL_STAGES_LOG" || true
 }
 
 build_image() {
@@ -48,7 +48,7 @@ build_image() {
 
   # create param to use (multiple) --cache-from options
   if [ "$max_stage" ]; then
-    cache_from=$(eval "echo --cache-from=$(_get_full_image_name)-stages:{1..$max_stage}")
+    cache_from=$(eval "echo --cache-from=$(_get_full_image_name):{1..$max_stage}")
     echo "Use cache: $cache_from"
   fi
 
@@ -77,14 +77,14 @@ push_image_and_stages() {
   # push each building stage
   stage_number=1
   for stage in $(_get_stages); do
-    stage_image=$(_get_full_image_name)-stages:$stage_number
+    stage_image=$(_get_full_image_name):$stage_number
     docker tag "$stage" "$stage_image"
     docker push "$stage_image"
     stage_number=$(( stage_number+1 ))
   done
 
   # push the image itself as a stage (the last one)
-  stage_image=$(_get_full_image_name)-stages:$stage_number
+  stage_image=$(_get_full_image_name):$stage_number
   docker tag "$(_get_full_image_name)":${INPUT_IMAGE_TAG} $stage_image
   docker push $stage_image
 }
